@@ -6,6 +6,7 @@ Includes cross-field validation to ensure configuration consistency.
 """
 
 from functools import lru_cache
+import os
 from typing import Literal
 
 from pydantic import Field, PrivateAttr, SecretStr, model_validator
@@ -37,11 +38,11 @@ class Settings(BaseSettings):
     # ===========================================
     groq_api_key: SecretStr = Field(..., description="Groq API key for LLM access")
     groq_model_primary: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         description="Primary Groq model for agent reasoning",
     )
     groq_model_fallback: str = Field(
-        default="llama-3.1-8b-instant",
+        default="qwen/qwen3.8-27b",
         description="Fallback Groq model for rate limit scenarios",
     )
     groq_temperature: float = Field(
@@ -165,11 +166,11 @@ class Settings(BaseSettings):
     # Telegram Notifications
     # ===========================================
     telegram_bot_token: str | None = Field(
-        default=None,
+        default=os.getenv("TELEGRAM_BOT_TOKEN"),
         description="Telegram bot token from @BotFather",
     )
     telegram_chat_id: str | None = Field(
-        default=None,
+        default=os.getenv("TELEGRAM_CHAT_ID"),
         description="Your Telegram chat ID from @userinfobot",
     )
     telegram_enabled: bool = Field(
