@@ -4,6 +4,7 @@ Orchestrates market regime, news sentiment, and risk analysis based on a convers
 """
 
 import asyncio
+import os
 from typing import Any, TypedDict
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -32,7 +33,7 @@ class InteractiveTradingState(TypedDict):
 settings = get_settings()
 llm = ChatGroq(
     model_name=settings.groq_model_primary,
-    api_key="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",
+    api_key=os.environ.get("GROQ_API_KEY", ""),
 )
 
 
