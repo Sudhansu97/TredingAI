@@ -9,6 +9,7 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
+import os
 from typing import Any
 from uuid import uuid4
 
@@ -120,7 +121,7 @@ class MistakeClassifier:
         """Initialize the LLM for classification."""
         settings = get_settings()
         self._llm = ChatGroq(
-            api_key=settings.groq_api_key.get_secret_value(),
+            api_key=os.environ.get("GROQ_API_KEY"),
             model_name=settings.groq_model_fallback,  # Use faster model for classification
             temperature=0.2,
             max_tokens=512,

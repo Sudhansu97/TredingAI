@@ -16,6 +16,7 @@ import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+import os
 from typing import Any
 from urllib.parse import quote
 
@@ -116,7 +117,7 @@ class NewsAnalyst:
         """Get or create LLM instance."""
         if self._llm is None:
             self._llm = ChatGroq(
-                api_key=self.settings.groq_api_key.get_secret_value(),
+                api_key=os.environ.get("GROQ_API_KEY"),
                 model_name=self.settings.groq_model_fallback,  # Use smaller model for news
                 temperature=0.1,
                 max_tokens=256,

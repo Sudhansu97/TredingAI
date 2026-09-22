@@ -12,6 +12,7 @@ Features:
 
 import json
 import logging
+import os
 from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -62,7 +63,7 @@ def create_strategy_agent() -> ChatGroq:
     settings = get_settings()
 
     return ChatGroq(
-        api_key=settings.groq_api_key.get_secret_value(),
+        api_key=os.environ.get("GROQ_API_KEY"),
         model_name=settings.groq_model_primary,
         temperature=settings.groq_temperature,
         max_tokens=1024,
