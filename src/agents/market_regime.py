@@ -128,6 +128,7 @@ def market_regime_node(state: TradingState) -> dict[str, Any]:
             try:
 
                 def invoke_llm():
+                    logger.info(f"api key for {model_name}: {os.environ.get('GROQ_API_KEY')}")
                     agent = ChatGroq(
                         api_key=os.environ.get("GROQ_API_KEY"),
                         model_name=model_name,
