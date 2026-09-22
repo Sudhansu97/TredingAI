@@ -24,8 +24,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -eu
-            cd ~/RakshaQuant
-            test -f .env || { echo "Missing ~/RakshaQuant/.env"; exit 1; }
+            cd ~/TredingAI
+            test -f .env || { echo "Missing ~/TredingAI/.env"; exit 1; }
             command -v docker >/dev/null || { echo "Docker is not installed"; exit 1; }
             docker compose version >/dev/null || { echo "Docker Compose is not available"; exit 1; }
             grep -q '^GROQ_API_KEY=.' .env || { echo "Missing GROQ_API_KEY in .env"; exit 1; }
