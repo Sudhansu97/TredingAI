@@ -15,8 +15,11 @@ ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
 
-# Copy dependency definitions first for Docker layer caching
-COPY pyproject.toml uv.lock ./
+# Copy dependency definitions and README required by hatchling
+COPY pyproject.toml uv.lock README.md* ./
+
+# If README.md doesn't exist locally, create a blank one so hatchling doesn't fail
+RUN touch README.md
 RUN uv sync --frozen --no-dev
 
 # Copy project source code
