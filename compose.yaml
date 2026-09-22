@@ -1,0 +1,11 @@
+services:
+  rakshaquant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./runtime-data:/app/runtime-data
+    working_dir: /app
