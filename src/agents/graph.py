@@ -34,17 +34,20 @@ def _news_analyst_node(state: dict) -> dict:
 
     try:
         analyst = NewsAnalyst()
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            # We're in an async context, run sync
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            # LangGraph normally runs this synchronous node in a worker thread,
+            # where no event loop exists yet.
+            sentiment = asyncio.run(analyst.get_market_sentiment())
+        else:
+            # The node may also be called directly from an async caller.
             import concurrent.futures
 
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 sentiment = pool.submit(asyncio.run, analyst.get_market_sentiment()).result(
                     timeout=30
                 )
-        else:
-            sentiment = asyncio.run(analyst.get_market_sentiment())
 
         # Canonical contract: news_sentiment is a dict ({"avg_sentiment": float}),
         # consumed by the sentiment, regime, and validation agents. Returning a
