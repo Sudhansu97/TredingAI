@@ -23,14 +23,15 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -eu
             cd ~/TredingAI
-            test -f .env || { echo "Missing ~/TredingAI/.env"; exit 1; }
-            command -v docker >/dev/null || { echo "Docker is not installed"; exit 1; }
-            docker compose version >/dev/null || { echo "Docker Compose is not available"; exit 1; }
-            grep -q '^GROQ_API_KEY=.' .env || { echo "Missing GROQ_API_KEY in .env"; exit 1; }
-            grep -q '^LANGSMITH_API_KEY=.' .env || { echo "Missing LANGSMITH_API_KEY in .env"; exit 1; }
             git pull origin main
-            docker compose down
-            docker compose up -d --build --remove-orphans
-            docker compose ps
+
+            # Stop and remove old container if running
+            docker stop trading-bot-container || true
+            docker rm trading-bot-container || true
+
+            # Build image using Dockerfile
+            docker build -t trading-bot .
+
+            # Run container using .env file
+            docker run -d --name trading-bot-container --restart always --env-file .env trading-bot
