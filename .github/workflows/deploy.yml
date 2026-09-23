@@ -26,6 +26,8 @@ jobs:
             cd ~/TredingAI
             git pull origin main
 
+            cp $HOME/.env .env  # Copy .env file from home directory to project directory
+
             # Stop and remove old container if running
             docker stop trading-bot-container || true
             docker rm trading-bot-container || true
