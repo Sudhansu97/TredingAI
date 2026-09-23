@@ -115,6 +115,7 @@ class NewsAnalyst:
 
     def _get_llm(self) -> ChatGroq:
         """Get or create LLM instance."""
+        logger.info(f"api key for {self.settings.groq_model_fallback}: {os.environ.get('GROQ_API_KEY')}")
         if self._llm is None:
             self._llm = ChatGroq(
                 api_key=os.environ.get("GROQ_API_KEY"),
