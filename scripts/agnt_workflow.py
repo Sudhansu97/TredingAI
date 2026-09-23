@@ -16,6 +16,9 @@ from src.agents.news_analyst import NewsAnalyst
 from src.config.settings import get_settings
 from src.market.yfinance_feed import YFinanceFeed
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # 1. Extended TradingState to carry user context and stock data
 class InteractiveTradingState(TypedDict):
@@ -31,6 +34,7 @@ class InteractiveTradingState(TypedDict):
 
 # Initialize LLM
 settings = get_settings()
+logger.info(f"api key for {settings.groq_model_primary}: {os.environ.get('GROQ_API_KEY')}")
 llm = ChatGroq(
     model_name=settings.groq_model_primary,
     api_key=os.environ.get("GROQ_API_KEY", ""),
