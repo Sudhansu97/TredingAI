@@ -65,7 +65,7 @@ def create_regime_agent() -> ChatGroq:
     settings = get_settings()
 
     return ChatGroq(
-        api_key=os.environ.get("GROQ_API_KEY"),
+        api_key=settings.groq_api_key.get_secret_value(),
         model_name=settings.groq_model_primary,
         temperature=settings.groq_temperature,
         max_tokens=1024,
@@ -128,9 +128,9 @@ def market_regime_node(state: TradingState) -> dict[str, Any]:
             try:
 
                 def invoke_llm():
-                    logger.info(f"api key for {model_name}: {os.environ.get('GROQ_API_KEY')}")
+                    # logger.info(f"api key for {model_name}: {settings.groq_api_key.get_secret_value()}")
                     agent = ChatGroq(
-                        api_key=os.environ.get("GROQ_API_KEY"),
+                        api_key=settings.groq_api_key.get_secret_value(),
                         model_name=model_name,
                         temperature=settings.groq_temperature,
                         max_tokens=1024,

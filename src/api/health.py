@@ -115,7 +115,7 @@ async def check_groq_api() -> ServiceHealth:
 
         # Simple ping to Groq
         llm = ChatGroq(
-            api_key=os.environ.get("GROQ_API_KEY"),
+            api_key=settings.groq_api_key.get_secret_value(),
             model_name=settings.groq_model_fallback,  # Use smaller model
             temperature=0,
             max_tokens=5,

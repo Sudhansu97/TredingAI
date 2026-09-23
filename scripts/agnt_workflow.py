@@ -34,10 +34,10 @@ class InteractiveTradingState(TypedDict):
 
 # Initialize LLM
 settings = get_settings()
-logger.info(f"api key for {settings.groq_model_primary}: {os.environ.get('GROQ_API_KEY')}")
+# print(f"api key for {settings.groq_model_primary}: {settings.groq_api_key.get_secret_value()}")
 llm = ChatGroq(
     model_name=settings.groq_model_primary,
-    api_key=os.environ.get("GROQ_API_KEY", ""),
+    api_key=settings.groq_api_key.get_secret_value(),
 )
 
 

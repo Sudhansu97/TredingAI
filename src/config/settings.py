@@ -12,8 +12,11 @@ from typing import Literal
 
 from pydantic import Field, PrivateAttr, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+load_dotenv(PROJECT_ROOT / ".env")  # Load .env file if present
 
 
 class Settings(BaseSettings):
