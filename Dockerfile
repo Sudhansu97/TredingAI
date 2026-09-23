@@ -26,4 +26,4 @@ RUN uv sync --frozen --no-dev
 COPY . .
 
 # Default command to launch the live trading app
-CMD ["uv", "run", "python", "scripts/run_live_trading.py"]
+CMD ["uv", "run", "python", "scripts/telegram_bot.py"]
