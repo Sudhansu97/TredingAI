@@ -133,11 +133,27 @@ def interactive_response_node(state: InteractiveTradingState) -> dict[str, Any]:
     Market Regime: {state["regime"]} (Confidence: {state["regime_confidence"] * 100:.0f}%)
     News Sentiment: {state.get("news_sentiment", {})}
 
-    Provide a concise, direct response with:
-    1. Direct recommendation or answer to their question.
-    2. Key technical regime indicators.
-    3. Sentiment summary.
-    4. Important risk warning/stop-loss advice.
+    Return a concise Telegram response using only these supported HTML tags:
+    <b>, <i>, <u>, <code>, and <pre>. Do not use Markdown, Markdown tables,
+    HTML tables, CSS, or unsupported tags. Use <pre> for aligned tables.
+
+    Use this structure:
+    <b>Summary</b>
+    Direct answer to the user's question.
+
+    <b>Market Regime</b>
+    Regime and confidence, or "Not requested" when unavailable.
+
+    <b>News Sentiment</b>
+    Sentiment label, score, and relevant headlines.
+
+    <b>Key Details</b>
+    <pre>Metric       Value
+Sentiment    bullish
+Confidence   78%</pre>
+
+    <b>Risk Warning</b>
+    Important paper-trading and stop-loss warning.
     """
     response = llm.invoke([HumanMessage(content=prompt)])
     return {"final_response": response.content}

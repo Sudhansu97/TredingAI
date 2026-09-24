@@ -5,8 +5,11 @@ Handles private direct messages and group tags (@bot_username).
 
 import logging
 import re
+from html import escape
 
 from telegram import Update
+from telegram.constants import ParseMode
+from telegram.error import BadRequest
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
 from scripts.agnt_workflow import create_interactive_graph
@@ -18,6 +21,28 @@ logging.basicConfig(
 
 # Compile agent graph once
 agent_app = create_interactive_graph(async_mode=True)
+
+
+def format_telegram_html(text: str) -> str:
+    """Keep only Telegram-supported HTML and remove Markdown code fences."""
+    formatted = re.sub(r"```(?:html)?\s*|\s*```", "", text, flags=re.IGNORECASE)
+    allowed_tags = r"b|strong|i|em|u|ins|s|strike|del|code|pre|tg-spoiler"
+    formatted = re.sub(
+        rf"</?(?!{allowed_tags}\b)[^>]+>",
+        "",
+        formatted,
+        flags=re.IGNORECASE,
+    )
+    return formatted.strip()
+
+
+async def edit_status_message(status_msg, text: str) -> None:
+    """Edit a Telegram message as HTML, falling back safely on malformed markup."""
+    formatted = format_telegram_html(text)
+    try:
+        await status_msg.edit_text(formatted, parse_mode=ParseMode.HTML)
+    except BadRequest:
+        await status_msg.edit_text(escape(re.sub(r"<[^>]+>", "", text)))
 
 
 async def handle_incoming_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -45,7 +70,10 @@ async def handle_incoming_message(update: Update, context: ContextTypes.DEFAULT_
         user_text = re.sub(mention_pattern, "", user_text, count=1, flags=re.IGNORECASE).strip()
 
     # Inform the user that analysis is in progress
-    status_msg = await update.message.reply_text("🔎 Analyzing market indicators & news...")
+    status_msg = await update.message.reply_text(
+        "<i>Analyzing market indicators and news...</i>",
+        parse_mode=ParseMode.HTML,
+    )
 
     # 2. Invoke Agent Workflow
     initial_state = {
@@ -64,9 +92,9 @@ async def handle_incoming_message(update: Update, context: ContextTypes.DEFAULT_
         response_text = output.get("final_response", "Sorry, I couldn't process that query.")
 
         # Edit temporary status message with the completed response
-        await status_msg.edit_text(response_text)
+        await edit_status_message(status_msg, response_text)
     except Exception as e:
-        await status_msg.edit_text(f"⚠️ Error executing query: {str(e)}")
+        await edit_status_message(status_msg, f"<b>Error:</b> {escape(str(e))}")
 
 
 def main():
