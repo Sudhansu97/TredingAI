@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 class InteractiveTradingState(TypedDict):
     user_query: str
     target_symbol: str
+    needs_market_regime: bool
     market_data: dict[str, Any]
     regime: str
     regime_confidence: float
@@ -61,7 +62,25 @@ def parse_user_query_node(state: InteractiveTradingState) -> dict[str, Any]:
     feed = YFinanceFeed()
     raw_data = feed.get_quote(f"{symbol}.NS")
 
-    return {"target_symbol": symbol, "market_data": raw_data}
+    regime_terms = (
+        "buy",
+        "sell",
+        "entry",
+        "exit",
+        "technical",
+        "trend",
+        "regime",
+        "forecast",
+        "target",
+        "recommend",
+    )
+    needs_market_regime = any(term in query.lower() for term in regime_terms)
+
+    return {
+        "target_symbol": symbol,
+        "market_data": raw_data,
+        "needs_market_regime": needs_market_regime,
+    }
 
 
 # --- Node 2: Market Regime Analysis ---
@@ -93,6 +112,13 @@ async def async_news_sentiment_node(state: InteractiveTradingState) -> dict[str,
     """Async variant used by callers that already run an event loop."""
     sentiment = await NewsAnalyst().get_stock_sentiment(state["target_symbol"])
     return {"news_sentiment": sentiment.to_dict()}
+
+
+def route_after_parser(state: InteractiveTradingState) -> str:
+    """Route news-only questions around the more expensive regime analysis."""
+    if state.get("needs_market_regime", True):
+        return "market_regime"
+    return "news_sentiment"
 
 
 # --- Node 4: Synthesis & Final Answer Node ---
@@ -132,7 +158,14 @@ def create_interactive_graph(async_mode: bool = False):
 
     # Define Edges / Execution Flow
     workflow.set_entry_point("parse_query")
-    workflow.add_edge("parse_query", "market_regime")
+    workflow.add_conditional_edges(
+        "parse_query",
+        route_after_parser,
+        {
+            "market_regime": "market_regime",
+            "news_sentiment": "news_sentiment",
+        },
+    )
     workflow.add_edge("market_regime", "news_sentiment")
     workflow.add_edge("news_sentiment", "synthesize")
     workflow.add_edge("synthesize", END)
@@ -149,6 +182,7 @@ if __name__ == "__main__":
     initial_state = {
         "user_query": user_input,
         "target_symbol": "",
+        "needs_market_regime": True,
         "market_data": {},
         "regime": "",
         "regime_confidence": 0.0,
